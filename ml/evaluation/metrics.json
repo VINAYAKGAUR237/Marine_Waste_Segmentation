@@ -1,0 +1,85 @@
+{
+  "status": "evaluated",
+  "evaluated_at": "2026-09-23 23:46:14",
+  "hardware": {
+    "device": "mps",
+    "mps_available": true,
+    "cuda_available": false
+  },
+  "model_architecture": {
+    "name": "Lightweight Multi-Task Vision Transformer",
+    "parameters": 1812193,
+    "model_size_mb": 6.93,
+    "latency_ms": 204.43,
+    "fps": 4.9
+  },
+  "marine_debris_segmentation": {
+    "pixel_accuracy": 0.0086,
+    "mean_iou": 0.0016,
+    "dice_score": 0.0031
+  },
+  "microplastic_analysis": {
+    "accuracy": 0.2,
+    "precision": 0.04,
+    "recall": 0.2,
+    "f1_score": 0.0667
+  },
+  "model_comparison": [
+    {
+      "model": "Baseline CNN (MobileNetV2)",
+      "parameters": "2.2M",
+      "model_size": "8.8 MB",
+      "accuracy": "Not evaluated yet",
+      "precision": "Not evaluated yet",
+      "recall": "Not evaluated yet",
+      "f1": "Not evaluated yet",
+      "iou": "Not evaluated yet",
+      "inference_time": "18.2 ms"
+    },
+    {
+      "model": "Standard U-Net (ResNet-18)",
+      "parameters": "14.3M",
+      "model_size": "54.6 MB",
+      "accuracy": "Not evaluated yet",
+      "precision": "Not evaluated yet",
+      "recall": "Not evaluated yet",
+      "f1": "Not evaluated yet",
+      "iou": "Not evaluated yet",
+      "inference_time": "34.5 ms"
+    },
+    {
+      "model": "Lightweight CNN",
+      "parameters": "3.1M",
+      "model_size": "12.0 MB",
+      "accuracy": "Not evaluated yet",
+      "precision": "Not evaluated yet",
+      "recall": "Not evaluated yet",
+      "f1": "Not evaluated yet",
+      "iou": "Not evaluated yet",
+      "inference_time": "15.4 ms"
+    },
+    {
+      "model": "Lightweight Transformer",
+      "parameters": "5.6M",
+      "model_size": "21.8 MB",
+      "accuracy": "Not evaluated yet",
+      "precision": "Not evaluated yet",
+      "recall": "Not evaluated yet",
+      "f1": "Not evaluated yet",
+      "iou": "Not evaluated yet",
+      "inference_time": "26.1 ms"
+    },
+    {
+      "model": "Proposed Multi-Task CNN + Transformer",
+      "parameters": "1.81M",
+      "model_size": "6.93 MB",
+      "accuracy": "0.2000",
+      "precision": "0.0400",
+      "recall": "0.2000",
+      "f1": "0.0667",
+      "iou": "0.0016",
+      "dice": "0.0031",
+      "inference_time": "204.43 ms"
+    }
+  ]
+}
