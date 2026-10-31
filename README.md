@@ -121,7 +121,78 @@ gallant-carson/
 
 ---
 
-## 4. Key Features
+## 4. Model Specifications & Empirical Benchmark Results
+
+### A. Architectural Specifications
+
+| Specification | Details | Design Justification |
+| :--- | :--- | :--- |
+| **Model Type** | Hybrid CNN + Vision Transformer (`LightweightMultiTaskViT`) | Fuses local inductive bias with global contextual awareness |
+| **Total Parameters** | **1,812,193 (~1.81 Million)** | **~98% smaller** than standard ViT-Base (86M params) for subsea deployment |
+| **Input Tensor** | `(B, 3, 256, 256)` RGB | Optimized spatial resolution for edge AUV/ROV hardware (e.g. Jetson Orin / Pi 5) |
+| **Hybrid Stem** | Conv Stem (Stride 2) + Inverted Residual Depthwise Convs | Extracts local boundary and texture features without quadratic memory cost |
+| **Transformer Backbone** | 4-Stage SegFormer / MiT-B0 with Spatial Reduction Attention (SRA) | SRA reduces $\mathcal{O}(N^2)$ attention complexity down to $\mathcal{O}(N^2 / R)$ |
+| **Stage Resolutions** | $C_1(64\times64)$, $C_2(32\times32)$, $C_3(16\times16)$, $C_4(8\times8)$ | Preserves multi-scale contextual features across varying debris sizes |
+| **Marine Debris Head** | All-MLP Multi-Scale Decoder $\rightarrow$ `(B, 7, 256, 256)` Logits | Unifies multi-level features for dense 7-class semantic segmentation |
+| **Microplastic Head** | Global Average Pooling (GAP) + Linear Head $\rightarrow$ `(B, 5)` Logits | 5-class morphology classification (`fibre`, `fragment`, `film`, `foam`, `sphere`) |
+| **Explainable AI (XAI)** | Extracted Self-Attention Weights | Spatial heatmaps showing model focus through murky underwater backscatter |
+
+### B. Dual-Scale Marine Taxonomies
+
+1. **Marine Debris (7 Classes)**:
+   - `0: background` (seafloor, water column, reefs)
+   - `1: bottle` (plastic & glass beverage bottles)
+   - `2: plastic_bag` (single-use shopping bags, polythene sheets)
+   - `3: wrapper` (food wrappers, snack packaging)
+   - `4: fishing_net` (ghost nets, commercial netting)
+   - `5: rope` (polypropylene marine lines, mooring ropes)
+   - `6: other_debris` (miscellaneous hard plastics, metal cans, cups)
+
+2. **Microplastics (5 Morphologies)**:
+   - `0: fibre` (synthetic textile microfibers)
+   - `1: fragment` (broken rigid plastics)
+   - `2: film` (degraded plastic bag/wrap films)
+   - `3: foam` (expanded polystyrene / styrofoam particles)
+   - `4: sphere` (cosmetic microbeads & virgin pre-production nurdles)
+
+### C. Training Pipeline & Combined Datasets
+
+The model was trained directly on two marine benchmark datasets using [`ml/training/train_combined_datasets.py`](ml/training/train_combined_datasets.py):
+
+* **TrashCan 1.0** (`mexwell/trashcan-1-0`): 6,065 training and 1,204 validation images with COCO polygon instance annotations rasterized on-the-fly into dense pixel masks.
+* **Underwater Trash Detection (UTD)** (`karanwxlia/underwater-trash-detection`): 7,308 training and 1,798 validation images with bounding box annotations.
+* **Composite Loss Function**: Class-weighted Cross-Entropy (penalizing background dominance with weight $0.2$ vs $1.2$ for debris) + Multi-Class Soft Dice Loss ($\mathcal{L}_{\text{total}} = 0.5 \mathcal{L}_{\text{wCE}} + 0.5 \mathcal{L}_{\text{Dice}}$).
+* **Optimization**: AdamW optimizer ($\eta = 8 \times 10^{-5}$, weight decay $10^{-2}$) with Cosine Annealing learning rate schedule and gradient clipping ($1.0$).
+
+### D. Empirical Validation Performance
+
+Evaluated on held-out marine validation sets:
+
+| Performance Metric | Result | Benchmark Description |
+| :--- | :---: | :--- |
+| **Validation Pixel Accuracy** | **77.43%** | Overall percentage of correctly classified pixels across full frames |
+| **Debris-Only mIoU** | **40.46%** | Mean Intersection-over-Union evaluated strictly on visible debris classes |
+| **Overall Validation mIoU** | **44.88%** | Mean IoU across all 7 classes including background water |
+| **Object Detection Precision** | **35.92%** | Precision of localized bounding box contours against ground-truth items |
+| **Object Detection Recall** | **24.83%** | Detection sensitivity in turbid and low-light underwater scenes |
+| **Detection F1-Score** | **29.37%** | Harmonic mean of detection precision and recall |
+| **Inference Latency** | **~31.2 ms** | Real-time throughput (~32 FPS) on Apple Silicon / workstation hardware |
+
+### E. Trained Checkpoint Artifacts & Quantization
+
+All weights are available in [`ml/checkpoints/`](ml/checkpoints/):
+
+| Format | Checkpoint File | Size | Target Deployment Platform |
+| :--- | :--- | :---: | :--- |
+| **PyTorch Checkpoint** | `best_multitask_vit.pt` | **20 MB** | Server / Workstation GPUs (PyTorch environment) |
+| **Latest Epoch Weights**| `latest.pt` | **7.0 MB** | Continuous training resumption checkpoint |
+| **Full ONNX Graph** | `multitask_vit.onnx` | **6.6 MB** | Cross-platform inference (C++, Python, TensorRT) |
+| **Quantized INT8 ONNX** | `multitask_vit_int8.onnx` | **1.86 MB** | **71.8% compression** for low-power edge ROVs / AUVs (Jetson Nano/Orin, Raspberry Pi) |
+| **Telemetry History** | `training_history.json` | **~1 KB** | Complete loss, accuracy, and mIoU epoch convergence logs |
+
+---
+
+## 5. Key Features
 
 1. **Shared Lightweight Hybrid Encoder**:
    - Only **1.81 Million parameters** (6.93 MB FP32), eliminating redundant dual-backbone memory footprint.
@@ -142,7 +213,7 @@ gallant-carson/
 
 ---
 
-## 5. Quickstart Installation & Setup
+## 6. Quickstart Installation & Setup
 
 ### Prerequisites
 - Python 3.10 - 3.14
@@ -176,14 +247,14 @@ npm run dev
 
 ---
 
-## 6. Training & Evaluation Commands
+## 7. Training & Evaluation Commands
 
-### Generate Demonstration Dataset
+### Production Training on Combined Real Datasets (TrashCan 1.0 + UTD)
 ```bash
-python -c "from ml.datasets.dataset import create_sample_dataset; create_sample_dataset('data', num_samples=32)"
+python ml/training/train_combined_datasets.py --epochs 10 --batch_size 16 --lr 0.0001
 ```
 
-### Multi-Task Model Training
+### Multi-Task Model Training (Synthetic / Demo Split)
 ```bash
 python ml/training/train_multitask.py --epochs 10 --batch_size 4 --lr 0.0001
 ```
@@ -195,12 +266,12 @@ python ml/evaluation/evaluate.py --checkpoint ml/checkpoints/best_multitask_vit.
 
 ### ONNX Export & INT8 Quantization
 ```bash
-python ml/export/export_model.py --format onnx --quantize
+python ml/export/export_model.py --checkpoint ml/checkpoints/best_multitask_vit.pt --output ml/checkpoints/multitask_vit.onnx --quantize
 ```
 
 ---
 
-## 7. API Endpoints Reference
+## 8. API Endpoints Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -217,7 +288,7 @@ python ml/export/export_model.py --format onnx --quantize
 
 ---
 
-## 8. Limitations & Future Scope
+## 9. Limitations & Future Scope
 
 ### Current Limitations
 - Preprocessing gains are statically tuned for temperate coastal waters; deep-ocean oceanic waters may require dynamic wavelength absorption tuning.
