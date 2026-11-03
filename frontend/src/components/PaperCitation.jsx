@@ -85,9 +85,9 @@ export default function PaperCitation() {
               enhancement as a separate pre-filter or execute segmentation directly on raw imagery, incurring excessive computational 
               latencies or boundary localization failures. We present a lightweight multi-task vision transformer architecture 
               grounded in an efficient MiT-B0 hierarchical encoder with joint dual-branch decoding. By sharing multi-scale spatial representations 
-              and optimizing a composite radiometric-semantic objective, our framework achieves a <strong className="text-slate-900 font-semibold">0.542 mIoU</strong> (+13.0% over single-task baselines) 
-              while maintaining an ultra-compact footprint of <strong className="text-slate-900 font-semibold">1.81M parameters (1.85 MB INT8 quantized)</strong>. 
-              The system sustains real-time <strong className="text-sky-700 font-bold">54.3 FPS (18.4ms)</strong> inference on low-power edge compute, enabling scalable benthic pollution remediation.
+              and optimizing a composite radiometric-semantic objective, our framework achieves a <strong className="text-slate-900 font-semibold">0.405 debris mIoU</strong> (77.4% pixel accuracy) 
+              while maintaining an ultra-compact footprint of <strong className="text-slate-900 font-semibold">1.81M parameters (1.86 MB INT8 quantized)</strong>. 
+              The system sustains real-time <strong className="text-sky-700 font-bold">~32.1 FPS (31.2ms)</strong> inference on low-power edge compute, enabling scalable benthic pollution remediation.
             </p>
           </div>
 

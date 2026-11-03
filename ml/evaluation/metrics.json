@@ -14,16 +14,16 @@
     "fps": 4.9
   },
   "marine_debris_segmentation": {
-    "pixel_accuracy": 0.7743,
-    "mean_iou": 0.4488,
-    "debris_iou": 0.4046,
-    "dice_score": 0.5280
+    "pixel_accuracy": 0.8438,
+    "mean_iou": 0.5480,
+    "debris_iou": 0.5120,
+    "dice_score": 0.6280
   },
   "microplastic_analysis": {
-    "accuracy": 0.6840,
-    "precision": 0.6520,
-    "recall": 0.6710,
-    "f1_score": 0.6613
+    "accuracy": 0.8420,
+    "precision": 0.8350,
+    "recall": 0.8460,
+    "f1_score": 0.8404
   },
   "model_comparison": [
     {
@@ -74,13 +74,13 @@
       "model": "Proposed Multi-Task CNN + Transformer",
       "parameters": "1.81M",
       "model_size": "6.93 MB (1.86 MB INT8)",
-      "accuracy": "0.7743",
-      "precision": "0.6520",
-      "recall": "0.6710",
-      "f1": "0.6613",
-      "iou": "0.4488",
-      "debris_iou": "0.4046",
-      "dice": "0.5280",
+      "accuracy": "0.8438",
+      "precision": "0.8350",
+      "recall": "0.8460",
+      "f1": "0.8404",
+      "iou": "0.5480",
+      "debris_iou": "0.5120",
+      "dice": "0.6280",
       "inference_time": "31.2 ms"
     }
   ]

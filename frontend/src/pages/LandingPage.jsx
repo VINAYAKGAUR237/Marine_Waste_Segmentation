@@ -125,7 +125,7 @@ export default function LandingPage({ onNavigate }) {
                 
                 {/* HUD Overlay telemetry */}
                 <div className="absolute top-3 left-3 px-2 py-1 rounded bg-[#030712]/80 backdrop-blur-md border border-slate-800 text-[10px] font-mono text-slate-300 space-y-0.5">
-                  <div>LATENCY: <span className="text-[#00F0FF]">18.4 ms</span></div>
+                  <div>LATENCY: <span className="text-[#00F0FF]">31.2 ms</span></div>
                   <div>DEPTH: <span className="text-slate-200">142.6 m</span></div>
                 </div>
 

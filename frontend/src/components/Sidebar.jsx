@@ -3,7 +3,7 @@ import {
   LayoutDashboard, 
   ScanSearch, 
   Trash2, 
-  Microscope, 
+  History, 
   Activity, 
   Database, 
   Sliders, 
@@ -14,11 +14,10 @@ import {
 export default function Sidebar({ activeTab, onSelectTab }) {
   const navItems = [
     { id: 'research', label: 'Research Publication', icon: BookOpen, badge: 'Flagship' },
-    { id: 'landing', label: 'Platform Overview', icon: Anchor, badge: null },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
     { id: 'analysis', label: 'Image Analysis', icon: ScanSearch, badge: 'Live' },
+    { id: 'history', label: 'My History', icon: History, badge: 'MongoDB' },
     { id: 'debris', label: 'Marine Debris', icon: Trash2, badge: null },
-    { id: 'microplastics', label: 'Microplastics', icon: Microscope, badge: null },
     { id: 'performance', label: 'Model Performance', icon: Activity, badge: null },
     { id: 'dataset', label: 'Dataset Explorer', icon: Database, badge: null },
     { id: 'preprocessing', label: 'Preprocessing Lab', icon: Sliders, badge: 'CLAHE' },
@@ -60,15 +59,15 @@ export default function Sidebar({ activeTab, onSelectTab }) {
         })}
       </div>
 
-      {/* Edge Deployment Tag */}
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-        <div className="flex items-center gap-2 text-sky-800 font-semibold mb-1">
-          <Anchor className="w-4 h-4 text-sky-600" />
-          <span>Edge Architecture</span>
+      <div className="pt-4 border-t border-slate-100">
+        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="text-[11px] font-mono text-slate-500 font-semibold mb-1">
+            EXPRESS + FASTAPI GATEWAY
+          </div>
+          <div className="text-xs text-slate-700">
+            Port 5000 ⇄ Port 8000
+          </div>
         </div>
-        <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-          Optimized for AUVs, ROVs & marine telemetry devices with unified CNN + ViT encoder.
-        </p>
       </div>
     </aside>
   );

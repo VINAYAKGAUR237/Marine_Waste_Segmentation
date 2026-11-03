@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Cpu, ShieldCheck, FileText, Terminal, Activity } from 'lucide-react';
+import { fetchModelInfo } from '../services/api';
 
 export default function HeroSection({ onNavigateSection, onSwitchToDashboard }) {
+  const [modelInfo, setModelInfo] = useState(null);
+
+  useEffect(() => {
+    fetchModelInfo()
+      .then((data) => setModelInfo(data))
+      .catch(() => {});
+  }, []);
+
+  const latency = modelInfo?.model_architecture?.latency_ms 
+    ? `${modelInfo.model_architecture.latency_ms} ms` 
+    : '31.2 ms';
+  const fps = modelInfo?.model_architecture?.fps 
+    ? `~${modelInfo.model_architecture.fps} FPS` 
+    : '~32.1 FPS';
+  const debrisIoU = modelInfo?.marine_debris_segmentation?.debris_iou 
+    ? modelInfo.marine_debris_segmentation.debris_iou.toFixed(3) 
+    : (modelInfo?.marine_debris_segmentation?.mean_iou 
+        ? modelInfo.marine_debris_segmentation.mean_iou.toFixed(3) 
+        : '0.405');
+  const pixelAcc = modelInfo?.marine_debris_segmentation?.pixel_accuracy
+    ? `${(modelInfo.marine_debris_segmentation.pixel_accuracy * 100).toFixed(1)}%`
+    : '77.4%';
   return (
     <section id="hero" className="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
       {/* Subtle coordinate dot grid */}
@@ -168,7 +191,7 @@ export default function HeroSection({ onNavigateSection, onSwitchToDashboard }) 
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   Validated on Jetson Orin Edge
                 </span>
-                <span className="text-sky-700 font-bold">18.4 ms</span>
+                <span className="text-sky-700 font-bold">{latency}</span>
               </div>
             </div>
           </div>
@@ -194,10 +217,10 @@ export default function HeroSection({ onNavigateSection, onSwitchToDashboard }) 
               INT8 Quantized Size
             </div>
             <div className="text-2xl font-bold font-mono text-emerald-700 tracking-tight">
-              1.85 MB
+              1.86 MB
             </div>
             <div className="text-[11px] font-sans text-slate-500 mt-1">
-              72% ONNX dynamic compression
+              71.8% dynamic compression
             </div>
           </div>
 
@@ -206,10 +229,10 @@ export default function HeroSection({ onNavigateSection, onSwitchToDashboard }) 
               Edge Inference Speed
             </div>
             <div className="text-2xl font-bold font-mono text-slate-900 tracking-tight">
-              18.4 ms
+              {latency}
             </div>
             <div className="text-[11px] font-sans text-sky-700 mt-1 flex items-center gap-1 font-medium">
-              <span>~54.3 FPS</span>
+              <span>{fps}</span>
               <span className="text-slate-400">real-time AUV rate</span>
             </div>
           </div>
@@ -219,10 +242,10 @@ export default function HeroSection({ onNavigateSection, onSwitchToDashboard }) 
               Debris Semantic mIoU
             </div>
             <div className="text-2xl font-bold font-mono text-sky-700 tracking-tight">
-              0.542
+              {debrisIoU}
             </div>
             <div className="text-[11px] font-sans text-emerald-700 mt-1 font-medium">
-              +13.0% vs Seg-only baseline
+              Pixel Accuracy: {pixelAcc}
             </div>
           </div>
 

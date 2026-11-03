@@ -1,9 +1,15 @@
 import React from 'react';
-import { Waves, Cpu, ShieldCheck, AlertCircle, ToggleLeft, ToggleRight, Sparkles } from 'lucide-react';
+import { Waves, Cpu, ShieldCheck, AlertCircle, Sparkles, User, LogOut, LogIn } from 'lucide-react';
 
-export default function Navbar({ systemStatus, isDemoMode, onToggleDemo, onSwitchToResearch }) {
+export default function Navbar({ 
+  systemStatus, 
+  currentUser, 
+  onLoginClick, 
+  onLogoutClick, 
+  onSwitchToResearch 
+}) {
   const isHealthy = systemStatus?.status === 'healthy';
-  const device = systemStatus?.device?.toUpperCase() || 'CPU';
+  const fastApiStatus = systemStatus?.fastapi_service || 'online';
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-xs">
@@ -17,35 +23,28 @@ export default function Navbar({ systemStatus, isDemoMode, onToggleDemo, onSwitc
             AQUA-VIT <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 font-mono border border-sky-200 font-semibold">v2.0</span>
           </h1>
           <p className="text-[11px] text-slate-500 hidden sm:block font-medium">
-            Lightweight Multi-Task Vision Transformer for Marine Debris & Microplastics
+            Underwater Marine Debris Semantic Segmentation & Telemetry
           </p>
         </div>
       </div>
 
-      {/* System Telemetry & Controls */}
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* Device Chip */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 font-mono">
-          <Cpu className="w-3.5 h-3.5 text-sky-600" />
-          <span>ACCEL:</span>
-          <span className="text-slate-900 font-bold">{device}</span>
-        </div>
-
-        {/* Backend Health Badge */}
-        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border ${
+      {/* System Telemetry & Auth Controls */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Backend Gateway Health Badge */}
+        <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border ${
           isHealthy 
             ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
             : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
           {isHealthy ? <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> : <AlertCircle className="w-3.5 h-3.5 text-rose-600" />}
-          <span className="font-semibold">{isHealthy ? 'API ONLINE' : 'OFFLINE'}</span>
+          <span className="font-semibold">{isHealthy ? 'EXPRESS (5000) ONLINE' : 'GATEWAY OFFLINE'}</span>
         </div>
 
         {/* Switch to Research Publication */}
         {onSwitchToResearch && (
           <button
             onClick={onSwitchToResearch}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-all cursor-pointer shadow-xs"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 transition-all cursor-pointer shadow-xs"
             title="Switch to academic research paper presentation"
           >
             <span>Research Paper</span>
@@ -53,20 +52,30 @@ export default function Navbar({ systemStatus, isDemoMode, onToggleDemo, onSwitc
           </button>
         )}
 
-        {/* Demo Mode Toggle */}
-        <button
-          onClick={onToggleDemo}
-          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-            isDemoMode
-              ? 'bg-amber-50 border-amber-300 text-amber-800'
-              : 'bg-sky-50 border-sky-200 text-sky-800'
-          }`}
-          title="Toggle between actual trained model inference and offline demo output"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-          <span>{isDemoMode ? 'DEMO MODE' : 'LIVE MODEL'}</span>
-          {isDemoMode ? <ToggleRight className="w-4 h-4 text-amber-600" /> : <ToggleLeft className="w-4 h-4 text-sky-600" />}
-        </button>
+        {/* Auth User Info or Login Button */}
+        {currentUser ? (
+          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
+              <User className="w-3.5 h-3.5 text-sky-600" />
+              <span className="max-w-[120px] truncate">{currentUser.name}</span>
+            </div>
+            <button
+              onClick={onLogoutClick}
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onLoginClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In</span>
+          </button>
+        )}
       </div>
     </header>
   );

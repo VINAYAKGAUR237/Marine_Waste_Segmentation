@@ -44,3 +44,12 @@ frontend/dist-ssr/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+*.env
+!.env.example
+
+# YOLO & Training artifacts
+runs/
+*.cache

@@ -1,127 +1,135 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import Dashboard from './pages/Dashboard';
+import LinearNavbar from './components/LinearNavbar';
 import ImageAnalysis from './pages/ImageAnalysis';
-import MarineDebris from './pages/MarineDebris';
-import MicroplasticAnalysis from './pages/MicroplasticAnalysis';
 import ModelPerformance from './pages/ModelPerformance';
-import DatasetPage from './pages/DatasetPage';
-import PreprocessingPlayground from './pages/PreprocessingPlayground';
+import MyHistory from './pages/MyHistory';
 import AboutProject from './pages/AboutProject';
-import ResearchHome from './pages/ResearchHome';
-import { fetchHealth, fetchModelInfo, toggleDemoMode } from './services/api';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
+import { fetchHealth, fetchModelInfo, getUser, clearAuth } from './services/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('research');
+  const [activeTab, setActiveTab] = useState('analysis');
+  const [hasActiveResult, setHasActiveResult] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
   const [modelInfo, setModelInfo] = useState(null);
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    // Initial health and model info fetch
+    // Check local auth
+    const storedUser = getUser();
+    if (storedUser) {
+      setCurrentUser(storedUser);
+    }
+
+    // Health and model info from Express backend
     fetchHealth()
-      .then((data) => {
-        setSystemStatus(data);
-        setIsDemoMode(data.is_demo_mode);
-      })
-      .catch((err) => console.warn('Backend not responding yet:', err));
+      .then((data) => setSystemStatus(data))
+      .catch((err) => console.warn('Backend status error:', err));
 
     fetchModelInfo()
       .then((data) => setModelInfo(data))
       .catch((err) => console.warn('Model info error:', err));
   }, []);
 
-  const handleToggleDemo = async () => {
-    try {
-      const nextState = !isDemoMode;
-      const res = await toggleDemoMode(nextState);
-      setIsDemoMode(res.is_demo_mode);
-    } catch (err) {
-      console.error('Failed to toggle demo mode:', err);
-    }
+  const handleLogout = () => {
+    clearAuth();
+    setCurrentUser(null);
+    setActiveTab('login');
   };
 
-  // If in flagship research publication view, render dedicated research layout
-  if (activeTab === 'research') {
-    return (
-      <ResearchHome
-        onSwitchToDashboard={() => setActiveTab('dashboard')}
-      />
-    );
-  }
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setActiveTab('analysis');
+  };
 
   const renderActivePage = () => {
     switch (activeTab) {
-      case 'landing':
-        return <LandingPage onNavigate={setActiveTab} />;
-      case 'dashboard':
-        return <Dashboard modelInfo={modelInfo} onNavigate={setActiveTab} />;
       case 'analysis':
-        return <ImageAnalysis isDemoMode={isDemoMode} />;
-      case 'debris':
-        return <MarineDebris />;
-      case 'microplastics':
-        return <MicroplasticAnalysis />;
+        return (
+          <ImageAnalysis
+            onNavigateToLogin={() => setActiveTab('login')}
+            onNavigateToHistory={() => setActiveTab('history')}
+            modelInfo={modelInfo}
+            onResultChange={setHasActiveResult}
+          />
+        );
       case 'performance':
-        return <ModelPerformance />;
-      case 'dataset':
-        return <DatasetPage />;
-      case 'preprocessing':
-        return <PreprocessingPlayground />;
+        return <ModelPerformance modelInfo={modelInfo} />;
+      case 'history':
+        return (
+          <MyHistory
+            onNavigateToLogin={() => setActiveTab('login')}
+            onNavigateToAnalysis={() => setActiveTab('analysis')}
+          />
+        );
       case 'about':
         return <AboutProject />;
-      default:
+      case 'dashboard':
         return <Dashboard modelInfo={modelInfo} onNavigate={setActiveTab} />;
+      case 'login':
+        return (
+          <Login
+            onAuthSuccess={handleAuthSuccess}
+            onNavigateToSignup={() => setActiveTab('signup')}
+          />
+        );
+      case 'signup':
+        return (
+          <Signup
+            onAuthSuccess={handleAuthSuccess}
+            onNavigateToLogin={() => setActiveTab('login')}
+          />
+        );
+      default:
+        return (
+          <ImageAnalysis
+            onNavigateToLogin={() => setActiveTab('login')}
+            onNavigateToHistory={() => setActiveTab('history')}
+            modelInfo={modelInfo}
+            onResultChange={setHasActiveResult}
+          />
+        );
     }
   };
 
+  const isAnalysisView = activeTab === 'analysis';
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 font-sans selection:bg-sky-500/20 selection:text-sky-900">
-      {/* Top Navigation */}
-      <Navbar
-        systemStatus={systemStatus}
-        isDemoMode={isDemoMode}
-        onToggleDemo={handleToggleDemo}
-        onSwitchToResearch={() => setActiveTab('research')}
-      />
+    <div className="min-h-screen bg-[#08090a] text-slate-100 font-sans linear-grid selection:bg-sky-500/30 selection:text-white flex flex-col overflow-x-hidden">
+      {/* Linear-Style Top Navigation (Completely removed on Analysis necklace view as requested) */}
+      {!isAnalysisView && (
+        <LinearNavbar
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          systemStatus={systemStatus}
+          currentUser={currentUser}
+          onLoginClick={() => setActiveTab('login')}
+          onLogoutClick={handleLogout}
+        />
+      )}
 
-      {/* Main Body */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
+      {/* Main Viewport */}
+      <main className={isAnalysisView ? "w-full min-h-screen p-0 m-0 overflow-x-hidden" : "flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4"}>
+        {renderActivePage()}
+      </main>
 
-        {/* Content Viewport */}
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-          {/* Mobile Tab Navigation */}
-          <div className="flex md:hidden overflow-x-auto gap-2 pb-3 mb-4 border-b border-slate-200 text-xs font-medium">
-            {[
-              { id: 'research', label: 'Paper & Lab' },
-              { id: 'landing', label: 'Platform' },
-              { id: 'dashboard', label: 'Dashboard' },
-              { id: 'analysis', label: 'Analysis' },
-              { id: 'debris', label: 'Debris' },
-              { id: 'microplastics', label: 'Microplastics' },
-              { id: 'performance', label: 'Performance' },
-              { id: 'dataset', label: 'Dataset' },
-              { id: 'preprocessing', label: 'Preprocessing' },
-              { id: 'about', label: 'About' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1.5 rounded-lg whitespace-nowrap cursor-pointer ${
-                  activeTab === tab.id ? 'bg-sky-50 text-sky-800 font-bold border border-sky-200 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+      {/* Linear-Style Minimal Footer (Completely removed on Analysis necklace view as requested) */}
+      {!isAnalysisView && (
+        <footer className="w-full border-t border-white/[0.06] bg-[#050608]/80 backdrop-blur-md py-6 px-4 mt-auto">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-sky-400" />
+              <span className="text-slate-400 font-semibold">Marine Debris Segmentation</span>
+              <span>• Vision Transformer Engine</span>
+            </div>
+            <div>
+              <span>Linear UI Style Architecture • Express + FastAPI + PyTorch MPS</span>
+            </div>
           </div>
-
-          {renderActivePage()}
-        </main>
-      </div>
+        </footer>
+      )}
     </div>
   );
 }

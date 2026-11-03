@@ -106,10 +106,14 @@ MICROPLASTIC_COLORS: Dict[str, Tuple[int, int, int]] = {
 
 # Runtime Environment settings
 MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "25"))
-DEMO_MODE_DEFAULT = os.getenv("DEMO_MODE", "true").lower() in ("true", "1", "yes")
+DEMO_MODE_DEFAULT = os.getenv("DEMO_MODE", "false").lower() in ("true", "1", "yes")
 CHECKPOINT_PATH = os.getenv(
     "CHECKPOINT_PATH",
     str(CHECKPOINT_DIR / "best_multitask_vit.pt")
+)
+YOLO_CHECKPOINT_PATH = os.getenv(
+    "YOLO_CHECKPOINT_PATH",
+    str(CHECKPOINT_DIR / "trashcan_yolov8n_seg.onnx")
 )
 ONNX_EXPORT_PATH = str(CHECKPOINT_DIR / "multitask_vit.onnx")
 

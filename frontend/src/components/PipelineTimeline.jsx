@@ -54,8 +54,8 @@ export default function PipelineTimeline() {
       tag: 'AUV / ROV Runtime',
       icon: ShieldCheck,
       summary: 'Model graph is exported to ONNX format with INT8 dynamic quantization for microsecond edge inference on submersibles.',
-      detail: 'Compacted from 6.93MB (FP32) to 1.85MB (INT8) with zero degradation in mIoU, sustaining ~54 FPS on low-power Jetson Orin payloads.',
-      tech: 'INT8 Dynamic Quantization • ONNX Runtime • 18.4ms Latency'
+      detail: 'Compacted from 6.93MB (FP32) to 1.86MB (INT8) sustaining real-time ~32 FPS inference on edge hardware.',
+      tech: 'INT8 Dynamic Quantization • ONNX Runtime • 31.2ms Latency'
     }
   ];
 

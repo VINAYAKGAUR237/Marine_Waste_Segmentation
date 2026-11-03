@@ -12,32 +12,28 @@ router = APIRouter(prefix="", tags=["Prediction & Analysis"])
 
 
 def validate_image_file(file: UploadFile, content: bytes) -> None:
-    max_bytes = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    max_bytes = 50 * 1024 * 1024  # 50MB
+    if not content or len(content) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The uploaded image file is empty (0 bytes)."
+        )
     if len(content) > max_bytes:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"Image size exceeds maximum limit of {MAX_UPLOAD_SIZE_MB}MB."
+            detail="Image size exceeds maximum limit of 50MB."
         )
-    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
-    if file.content_type and file.content_type.lower() not in allowed_types:
-        # Fall back to extension check
-        ext = file.filename.split(".")[-1].lower() if file.filename else ""
-        if ext not in ["jpg", "jpeg", "png", "webp"]:
-            raise HTTPException(
-                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                detail=f"Unsupported format '{file.content_type}'. Please upload JPG, PNG, or WEBP."
-            )
 
 
 @router.post("/predict")
 async def predict(
     file: UploadFile = File(...),
-    task: str = Form("all"),
-    enhance: bool = Form(True),
+    task: str = Form("debris"),
+    enhance: bool = Form(False),
     clip_limit: Optional[float] = Form(None),
     denoise_strength: Optional[float] = Form(None)
 ) -> Dict[str, Any]:
-    """Single image prediction endpoint returning segmentation masks, detected objects, and confidence."""
+    """Single image prediction endpoint returning segmentation masks, detected objects, and overlay."""
     content = await file.read()
     validate_image_file(file, content)
 
@@ -51,18 +47,18 @@ async def predict(
             denoise_strength=denoise_strength
         )
         return {
-            "task": result["task"],
+            "task": "debris",
             "is_demo": result["is_demo"],
             "mode_label": result["mode_label"],
             "predictions": result["marine_debris"]["detected_objects"],
-            "confidence": result["microplastic"]["confidence"],
-            "microplastic": result["microplastic"],
             "segmentation_mask": result["visualizations"]["mask"],
             "overlay": result["visualizations"]["overlay"],
             "preprocessed": result["visualizations"]["preprocessed"],
+            "enhanced": result["visualizations"].get("enhanced", result["visualizations"]["preprocessed"]),
             "original": result["visualizations"]["original"],
             "coverage_percentage": result["coverage_percentage"],
-            "processing_time": result["processing_time_ms"]
+            "processing_time": result["processing_time_ms"],
+            "microplastic": result.get("microplastic")
         }
     except Exception as e:
         raise HTTPException(
@@ -74,7 +70,7 @@ async def predict(
 @router.post("/analyze")
 async def analyze(
     file: UploadFile = File(...),
-    enhance: bool = Form(True)
+    enhance: bool = Form(False)
 ) -> Dict[str, Any]:
     """Comprehensive multi-task analysis endpoint returning all telemetry, morphology, and visuals."""
     content = await file.read()
@@ -93,7 +89,7 @@ async def analyze(
 @router.post("/batch-predict")
 async def batch_predict(
     files: List[UploadFile] = File(...),
-    enhance: bool = Form(True)
+    enhance: bool = Form(False)
 ) -> Dict[str, Any]:
     """Processes multiple uploaded images in batch."""
     if len(files) > 10:

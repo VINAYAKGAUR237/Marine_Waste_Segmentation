@@ -26,7 +26,7 @@ export default function ExperimentLab() {
       title: 'Sample 01: Discarded Bottle in Jerlov II Shallows',
       path: '/api/static/data/marine_debris/images/train/debris_0000.jpg',
       maskPath: '/api/static/data/marine_debris/masks/train/debris_0000.png',
-      depth: '18.4m',
+      depth: '14.2m',
       turbidity: '11.2 NTU',
       expectedClass: 'Bottle (PET)',
     },
@@ -115,7 +115,7 @@ export default function ExperimentLab() {
           ],
           confidence: 0.912,
           coverage_percentage: 14.8,
-          processing_time: modelType === 'joint' ? '18.4' : modelType === 'sequential' ? '36.8' : '15.2',
+          processing_time: modelType === 'joint' ? '31.2' : modelType === 'sequential' ? '45.8' : '22.4',
           original: imagePreview,
           preprocessed: imagePreview,
           segmentation_mask: sampleDatasets[selectedSample]?.maskPath || imagePreview,
@@ -381,7 +381,7 @@ export default function ExperimentLab() {
                 <div>
                   <span className="text-[10px] text-slate-500 uppercase block font-medium">Inference Latency</span>
                   <span className="text-slate-900 font-bold text-sm">
-                    {inferenceResult?.processing_time ? `${inferenceResult.processing_time} ms` : '18.4 ms'}
+                    {inferenceResult?.processing_time ? `${inferenceResult.processing_time} ms` : '31.2 ms'}
                   </span>
                 </div>
 
